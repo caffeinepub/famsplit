@@ -1,0 +1,91 @@
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/assets/fonts/BricolageGrotesque[opsz,wdth,wght].woff2")
+    format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans[wght].woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0.98 0.008 220;
+    --foreground: 0.18 0.02 250;
+    --card: 1 0 0;
+    --card-foreground: 0.18 0.02 250;
+    --popover: 1 0 0;
+    --popover-foreground: 0.18 0.02 250;
+    --primary: 0.52 0.18 220;
+    --primary-foreground: 1 0 0;
+    --secondary: 0.95 0.01 220;
+    --secondary-foreground: 0.28 0.02 250;
+    --muted: 0.94 0.008 220;
+    --muted-foreground: 0.52 0.015 250;
+    --accent: 0.92 0.05 220;
+    --accent-foreground: 0.18 0.02 250;
+    --destructive: 0.57 0.22 27;
+    --destructive-foreground: 1 0 0;
+    --success: 0.62 0.17 145;
+    --success-foreground: 1 0 0;
+    --border: 0.9 0.01 220;
+    --input: 0.9 0.01 220;
+    --ring: 0.52 0.18 220;
+    --radius: 0.75rem;
+    --chart-1: 0.52 0.18 220;
+    --chart-2: 0.55 0.18 145;
+    --chart-3: 0.6 0.18 260;
+    --chart-4: 0.72 0.18 80;
+    --chart-5: 0.62 0.2 300;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  .category-groceries {
+    --cat-color: oklch(0.55 0.18 145);
+  }
+  .category-rent {
+    --cat-color: oklch(0.55 0.18 260);
+  }
+  .category-utilities {
+    --cat-color: oklch(0.72 0.18 80);
+  }
+  .category-medical {
+    --cat-color: oklch(0.57 0.22 27);
+  }
+  .category-travel {
+    --cat-color: oklch(0.6 0.2 300);
+  }
+  .category-other {
+    --cat-color: oklch(0.55 0.01 250);
+  }
+  .category-education {
+    --cat-color: oklch(0.6 0.18 220);
+  }
+  .category-entertainment {
+    --cat-color: oklch(0.65 0.2 340);
+  }
+}
