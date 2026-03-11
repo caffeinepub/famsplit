@@ -18,7 +18,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Category } from "../backend";
+import { Category, SplitType } from "../backend";
 import type { Member } from "../backend";
 import { useAddExpense } from "../hooks/useQueries";
 import { CATEGORY_CONFIG, rupeesToPaise } from "../utils/format";
@@ -78,12 +78,21 @@ export function AddExpenseModal({
     }
 
     try {
+      // Build equal split details
+      const splitCount = splitAmong.length;
+      const totalPaise = rupeesToPaise(amount);
+      const perPersonPaise = totalPaise / BigInt(splitCount);
+      const splitDetails: [string, bigint][] = splitAmong.map((name) => [
+        name,
+        perPersonPaise,
+      ]);
       await addExpense.mutateAsync({
         description: description.trim(),
-        amount: rupeesToPaise(amount),
+        amount: totalPaise,
         category,
         paidBy,
-        splitAmong,
+        splitType: SplitType.equal,
+        splitDetails,
         date,
       });
       toast.success("Expense added!");

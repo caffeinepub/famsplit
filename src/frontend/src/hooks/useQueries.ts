@@ -1,16 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Category } from "../backend";
-import type {
-  Expense,
-  Member,
-  MonthlySummary,
-  Settlement,
-  UserProfile,
-} from "../backend";
+import { Category, SplitType } from "../backend";
+import type { Expense, Member, MonthlySummary, Settlement } from "../backend";
 import { useActor } from "./useActor";
 
-export type { Member, Expense, Settlement, MonthlySummary, UserProfile };
-export { Category };
+export type { Member, Expense, Settlement, MonthlySummary };
+export { Category, SplitType };
 
 export function useMembers() {
   const { actor, isFetching } = useActor();
@@ -19,18 +13,6 @@ export function useMembers() {
     queryFn: async () => {
       if (!actor) return [];
       return actor.getMembers();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useBalances() {
-  const { actor, isFetching } = useActor();
-  return useQuery<Member[]>({
-    queryKey: ["balances"],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getBalances();
     },
     enabled: !!actor && !isFetching,
   });
@@ -64,21 +46,14 @@ export function useMonthlySummary(month: string) {
   const { actor, isFetching } = useActor();
   return useQuery<MonthlySummary>({
     queryKey: ["monthlySummary", month],
-    queryFn: async () => {
-      if (!actor) return { totalSpending: BigInt(0), categoryBreakdown: [] };
+    queryFn: async (): Promise<MonthlySummary> => {
+      if (!actor)
+        return {
+          categoryBreakdown: [],
+          totalFundsAdded: BigInt(0),
+          totalExpenses: BigInt(0),
+        };
       return actor.getMonthlySummary(month);
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useUserProfile() {
-  const { actor, isFetching } = useActor();
-  return useQuery<UserProfile | null>({
-    queryKey: ["userProfile"],
-    queryFn: async () => {
-      if (!actor) return null;
-      return actor.getCallerUserProfile();
     },
     enabled: !!actor && !isFetching,
   });
@@ -88,13 +63,12 @@ export function useAddMember() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async ({ name, phone }: { name: string; phone: string }) => {
       if (!actor) throw new Error("Not connected");
-      return actor.addMember(name);
+      return actor.addMember(name, phone);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      queryClient.invalidateQueries({ queryKey: ["balances"] });
     },
   });
 }
@@ -103,13 +77,12 @@ export function useRemoveMember() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async (id: string) => {
       if (!actor) throw new Error("Not connected");
-      return actor.removeMember(name);
+      return actor.removeMember(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      queryClient.invalidateQueries({ queryKey: ["balances"] });
     },
   });
 }
@@ -123,7 +96,8 @@ export function useAddExpense() {
       amount: bigint;
       category: Category;
       paidBy: string;
-      splitAmong: string[];
+      splitType: SplitType;
+      splitDetails: Array<[string, bigint]>;
       date: string;
     }) => {
       if (!actor) throw new Error("Not connected");
@@ -132,13 +106,12 @@ export function useAddExpense() {
         data.amount,
         data.category,
         data.paidBy,
-        data.splitAmong,
-        data.date,
+        data.splitType,
+        data.splitDetails,
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
-      queryClient.invalidateQueries({ queryKey: ["balances"] });
       queryClient.invalidateQueries({ queryKey: ["monthlySummary"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
     },
@@ -155,7 +128,6 @@ export function useDeleteExpense() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
-      queryClient.invalidateQueries({ queryKey: ["balances"] });
       queryClient.invalidateQueries({ queryKey: ["monthlySummary"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
     },
@@ -177,22 +149,7 @@ export function useAddSettlement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["settlements"] });
-      queryClient.invalidateQueries({ queryKey: ["balances"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-    },
-  });
-}
-
-export function useSaveProfile() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (profile: UserProfile) => {
-      if (!actor) throw new Error("Not connected");
-      return actor.saveCallerUserProfile(profile);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
     },
   });
 }

@@ -10,6 +10,15 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Budget {
+  'id' : bigint,
+  'month' : string,
+  'owner' : string,
+  'createdAt' : Time,
+  'year' : bigint,
+  'category' : Category,
+  'amount' : bigint,
+}
 export type Category = { 'other' : null } |
   { 'entertainment' : null } |
   { 'travel' : null } |
@@ -19,17 +28,20 @@ export type Category = { 'other' : null } |
   { 'schoolFees' : null };
 export interface Expense {
   'id' : bigint,
-  'date' : string,
+  'date' : Time,
+  'splitType' : SplitType,
   'description' : string,
   'category' : Category,
   'amount' : bigint,
   'paidBy' : string,
-  'splitAmong' : Array<string>,
+  'splitDetails' : Array<[string, bigint]>,
 }
-export interface Member { 'balance' : bigint, 'name' : string }
+export type ExternalBlob = Uint8Array;
+export interface Member { 'id' : string, 'name' : string, 'phone' : string }
 export interface MonthlySummary {
-  'totalSpending' : bigint,
   'categoryBreakdown' : Array<[Category, bigint]>,
+  'totalFundsAdded' : bigint,
+  'totalExpenses' : bigint,
 }
 export interface Settlement {
   'to' : string,
@@ -38,36 +50,85 @@ export interface Settlement {
   'timestamp' : Time,
   'amount' : bigint,
 }
+export type SplitType = { 'custom' : null } |
+  { 'equal' : null } |
+  { 'percentage' : null };
 export type Time = bigint;
-export interface UserProfile { 'name' : string, 'email' : string }
+export interface Transaction {
+  'id' : bigint,
+  'transactionType' : { 'expense' : [] | [string] } |
+    { 'fundsAdded' : { 'user' : string } },
+  'description' : [] | [string],
+  'timestamp' : Time,
+  'amount' : bigint,
+}
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface Wallet {
+  'balance' : bigint,
+  'transactionHistory' : Array<Transaction>,
+}
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
-  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addExpense' : ActorMethod<
-    [string, bigint, Category, string, Array<string>, string],
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
     undefined
   >,
-  'addMember' : ActorMethod<[string], undefined>,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
+  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addBudget' : ActorMethod<[Category, bigint, string, bigint], undefined>,
+  'addExpense' : ActorMethod<
+    [string, bigint, Category, string, SplitType, Array<[string, bigint]>],
+    undefined
+  >,
+  'addFunds' : ActorMethod<[string, bigint], undefined>,
+  'addMember' : ActorMethod<[string, string], undefined>,
   'addSettlement' : ActorMethod<
     [string, string, bigint, [] | [string]],
     undefined
   >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'convertCurrency' : ActorMethod<[bigint, string, string], bigint>,
   'deleteExpense' : ActorMethod<[bigint], undefined>,
-  'getBalances' : ActorMethod<[], Array<Member>>,
-  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
+  'getBudgets' : ActorMethod<[], Array<Budget>>,
+  'getBudgetsByCategory' : ActorMethod<[Category], Array<Budget>>,
+  'getBudgetsByMonthYear' : ActorMethod<[string, bigint], Array<Budget>>,
+  'getBudgetsByOwner' : ActorMethod<[string], Array<Budget>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [{ 'name' : string }]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getExpense' : ActorMethod<[bigint], [] | [Expense]>,
   'getExpenses' : ActorMethod<[], Array<Expense>>,
+  'getIncomeAnalytics' : ActorMethod<[], Array<[string, bigint]>>,
   'getMembers' : ActorMethod<[], Array<Member>>,
   'getMonthlySummary' : ActorMethod<[string], MonthlySummary>,
   'getSettlements' : ActorMethod<[], Array<Settlement>>,
-  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getSpendingAnalytics' : ActorMethod<[], Array<[string, bigint]>>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [{ 'name' : string }]>,
+  'getWallet' : ActorMethod<[string], Wallet>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'removeMember' : ActorMethod<[string], undefined>,
-  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'saveCallerUserProfile' : ActorMethod<[{ 'name' : string }], undefined>,
+  'uploadReceipt' : ActorMethod<[string, ExternalBlob], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

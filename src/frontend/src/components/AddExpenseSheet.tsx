@@ -330,14 +330,14 @@ export function AddExpenseSheet({
               })}
               {splitType === "percentage" && (
                 <p
-                  className={`text-xs text-right font-medium ${totalPercentage === 100 ? "text-green-600" : "text-red-500"}`}
+                  className={`text-xs text-right font-medium ${totalPercentage === 100 ? "text-green-600" : "text-amber-600"}`}
                 >
                   Total: {totalPercentage}%
                 </p>
               )}
               {splitType === "custom" && (
                 <p
-                  className={`text-xs text-right font-medium ${Math.abs(totalCustom - totalAmount) < 0.5 ? "text-green-600" : "text-red-500"}`}
+                  className={`text-xs text-right font-medium ${Math.abs(totalCustom - totalAmount) < 0.5 ? "text-green-600" : "text-amber-600"}`}
                 >
                   ₹{totalCustom.toFixed(2)} / ₹{totalAmount.toFixed(2)}
                 </p>

@@ -185,8 +185,8 @@ export function Dashboard({
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-destructive" />
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-xs text-muted-foreground">
                     Month Spent
@@ -309,7 +309,7 @@ export function Dashboard({
                     </span>
                     <span
                       className={`text-sm font-bold ${
-                        balance >= 0 ? "text-green-600" : "text-destructive"
+                        balance >= 0 ? "text-green-600" : "text-primary"
                       }`}
                     >
                       {balance >= 0 ? "+" : ""}₹{fmt(Math.abs(balance))}
@@ -408,8 +408,8 @@ export function Dashboard({
         >
           <SheetHeader className="px-4 pt-2 pb-3 border-b">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                <CalendarDays className="w-4 h-4 text-destructive" />
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <CalendarDays className="w-4 h-4 text-primary" />
               </div>
               <div>
                 <SheetTitle className="text-base font-display">
@@ -420,7 +420,7 @@ export function Dashboard({
                 </p>
               </div>
               <div className="ml-auto text-right">
-                <p className="font-display text-xl font-bold text-destructive">
+                <p className="font-display text-xl font-bold text-primary">
                   ₹{fmt(totalSpent)}
                 </p>
                 <p className="text-[10px] text-muted-foreground">total</p>
@@ -541,16 +541,14 @@ export function Dashboard({
                   ₹{fmt(totalWalletIn)}
                 </p>
               </div>
-              <div className="flex-1 bg-red-50 rounded-xl p-3 text-center">
+              <div className="flex-1 bg-primary/5 rounded-xl p-3 text-center">
                 <div className="flex items-center justify-center gap-1 mb-1">
-                  <ArrowUp className="w-3.5 h-3.5 text-destructive" />
+                  <ArrowUp className="w-3.5 h-3.5 text-primary" />
                   <span className="text-xs text-muted-foreground">
                     Total Out
                   </span>
                 </div>
-                <p className="font-bold text-destructive">
-                  ₹{fmt(totalWalletOut)}
-                </p>
+                <p className="font-bold text-primary">₹{fmt(totalWalletOut)}</p>
               </div>
             </div>
           </SheetHeader>
@@ -572,12 +570,12 @@ export function Dashboard({
                       data-ocid={`dashboard.wallet.item.${idx + 1}`}
                     >
                       <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${t.type === "in" ? "bg-green-100" : "bg-red-100"}`}
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${t.type === "in" ? "bg-green-100" : "bg-primary/10"}`}
                       >
                         {t.type === "in" ? (
                           <ArrowDown className="w-4 h-4 text-green-600" />
                         ) : (
-                          <ArrowUp className="w-4 h-4 text-destructive" />
+                          <ArrowUp className="w-4 h-4 text-primary" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -592,7 +590,7 @@ export function Dashboard({
                       </div>
                       <div className="text-right shrink-0">
                         <p
-                          className={`font-bold text-sm ${t.type === "in" ? "text-green-600" : "text-destructive"}`}
+                          className={`font-bold text-sm ${t.type === "in" ? "text-green-600" : "text-primary"}`}
                         >
                           {t.type === "in" ? "+" : "-"}₹{fmt(t.amount)}
                         </p>
@@ -656,7 +654,7 @@ export function Dashboard({
                     </div>
                     <div className="text-right">
                       <p
-                        className={`font-bold text-sm ${balance >= 0 ? "text-green-600" : "text-destructive"}`}
+                        className={`font-bold text-sm ${balance >= 0 ? "text-green-600" : "text-primary"}`}
                       >
                         {balance >= 0 ? "+" : ""}₹{fmt(Math.abs(balance))}
                       </p>
@@ -726,7 +724,7 @@ export function Dashboard({
               )}
               {membersOwed.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-destructive uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
                     Owes Money
                   </p>
                   <div className="divide-y divide-border">
@@ -743,7 +741,7 @@ export function Dashboard({
                             needs to pay
                           </p>
                         </div>
-                        <p className="font-bold text-destructive">
+                        <p className="font-bold text-primary">
                           -₹{fmt(Math.abs(net[m.id] ?? 0))}
                         </p>
                       </div>

@@ -295,7 +295,7 @@ export function Settle() {
                       </p>
                     </div>
                     <span
-                      className={`font-bold text-base ${balance >= 0 ? "text-green-600" : "text-destructive"}`}
+                      className={`font-bold text-base ${balance >= 0 ? "text-green-600" : "text-primary"}`}
                     >
                       {balance >= 0 ? "+" : ""}₹{fmt(Math.abs(balance))}
                     </span>

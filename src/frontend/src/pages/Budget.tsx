@@ -163,7 +163,7 @@ export function Budget() {
                       <div className="flex items-center gap-2">
                         <CategoryBadge category={b.category} />
                         {isOver ? (
-                          <AlertTriangle className="w-4 h-4 text-destructive" />
+                          <AlertTriangle className="w-4 h-4 text-amber-500" />
                         ) : isWarning ? (
                           <AlertTriangle className="w-4 h-4 text-amber-500" />
                         ) : (
@@ -186,7 +186,7 @@ export function Budget() {
                       value={pct}
                       className={`h-2 mb-2 ${
                         isOver
-                          ? "[&>div]:bg-destructive"
+                          ? "[&>div]:bg-amber-500"
                           : isWarning
                             ? "[&>div]:bg-amber-500"
                             : ""
@@ -194,7 +194,7 @@ export function Budget() {
                     />
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-sm font-semibold ${isOver ? "text-destructive" : "text-foreground"}`}
+                        className={`text-sm font-semibold ${isOver ? "text-amber-600" : "text-foreground"}`}
                       >
                         ₹{fmt(spent)} spent
                       </span>
@@ -203,7 +203,7 @@ export function Budget() {
                       </span>
                     </div>
                     {isOver && (
-                      <p className="text-xs text-destructive mt-1 font-medium">
+                      <p className="text-xs text-amber-600 mt-1 font-medium">
                         Over by ₹{fmt(spent - b.amount)}!
                       </p>
                     )}

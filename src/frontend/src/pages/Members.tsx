@@ -159,7 +159,7 @@ export function Members() {
                             Balance
                           </p>
                           <p
-                            className={`text-sm font-bold ${balance >= 0 ? "text-green-600" : "text-destructive"}`}
+                            className={`text-sm font-bold ${balance >= 0 ? "text-green-600" : "text-primary"}`}
                           >
                             {balance >= 0 ? "+" : ""}₹{fmt(Math.abs(balance))}
                           </p>

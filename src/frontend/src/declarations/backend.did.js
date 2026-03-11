@@ -8,6 +8,17 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
 export const Category = IDL.Variant({
   'other' : IDL.Null,
   'entertainment' : IDL.Null,
@@ -17,30 +28,46 @@ export const Category = IDL.Variant({
   'groceries' : IDL.Null,
   'schoolFees' : IDL.Null,
 });
+export const SplitType = IDL.Variant({
+  'custom' : IDL.Null,
+  'equal' : IDL.Null,
+  'percentage' : IDL.Null,
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const Member = IDL.Record({ 'balance' : IDL.Int, 'name' : IDL.Text });
-export const UserProfile = IDL.Record({
-  'name' : IDL.Text,
-  'email' : IDL.Text,
+export const Time = IDL.Int;
+export const Budget = IDL.Record({
+  'id' : IDL.Nat,
+  'month' : IDL.Text,
+  'owner' : IDL.Text,
+  'createdAt' : Time,
+  'year' : IDL.Nat,
+  'category' : Category,
+  'amount' : IDL.Nat,
 });
 export const Expense = IDL.Record({
   'id' : IDL.Nat,
-  'date' : IDL.Text,
+  'date' : Time,
+  'splitType' : SplitType,
   'description' : IDL.Text,
   'category' : Category,
   'amount' : IDL.Nat,
   'paidBy' : IDL.Text,
-  'splitAmong' : IDL.Vec(IDL.Text),
+  'splitDetails' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+});
+export const Member = IDL.Record({
+  'id' : IDL.Text,
+  'name' : IDL.Text,
+  'phone' : IDL.Text,
 });
 export const MonthlySummary = IDL.Record({
-  'totalSpending' : IDL.Nat,
   'categoryBreakdown' : IDL.Vec(IDL.Tuple(Category, IDL.Nat)),
+  'totalFundsAdded' : IDL.Nat,
+  'totalExpenses' : IDL.Nat,
 });
-export const Time = IDL.Int;
 export const Settlement = IDL.Record({
   'to' : IDL.Text,
   'from' : IDL.Text,
@@ -48,43 +75,135 @@ export const Settlement = IDL.Record({
   'timestamp' : Time,
   'amount' : IDL.Nat,
 });
+export const Transaction = IDL.Record({
+  'id' : IDL.Nat,
+  'transactionType' : IDL.Variant({
+    'expense' : IDL.Opt(IDL.Text),
+    'fundsAdded' : IDL.Record({ 'user' : IDL.Text }),
+  }),
+  'description' : IDL.Opt(IDL.Text),
+  'timestamp' : Time,
+  'amount' : IDL.Int,
+});
+export const Wallet = IDL.Record({
+  'balance' : IDL.Int,
+  'transactionHistory' : IDL.Vec(Transaction),
+});
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 
 export const idlService = IDL.Service({
-  '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addExpense' : IDL.Func(
-      [IDL.Text, IDL.Nat, Category, IDL.Text, IDL.Vec(IDL.Text), IDL.Text],
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
       [],
       [],
     ),
-  'addMember' : IDL.Func([IDL.Text], [], []),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+  '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addBudget' : IDL.Func([Category, IDL.Nat, IDL.Text, IDL.Nat], [], []),
+  'addExpense' : IDL.Func(
+      [
+        IDL.Text,
+        IDL.Nat,
+        Category,
+        IDL.Text,
+        SplitType,
+        IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+      ],
+      [],
+      [],
+    ),
+  'addFunds' : IDL.Func([IDL.Text, IDL.Nat], [], []),
+  'addMember' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'addSettlement' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
       [],
       [],
     ),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'convertCurrency' : IDL.Func(
+      [IDL.Nat, IDL.Text, IDL.Text],
+      [IDL.Nat],
+      ['query'],
+    ),
   'deleteExpense' : IDL.Func([IDL.Nat], [], []),
-  'getBalances' : IDL.Func([], [IDL.Vec(Member)], ['query']),
-  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+  'getBudgets' : IDL.Func([], [IDL.Vec(Budget)], ['query']),
+  'getBudgetsByCategory' : IDL.Func([Category], [IDL.Vec(Budget)], ['query']),
+  'getBudgetsByMonthYear' : IDL.Func(
+      [IDL.Text, IDL.Nat],
+      [IDL.Vec(Budget)],
+      ['query'],
+    ),
+  'getBudgetsByOwner' : IDL.Func([IDL.Text], [IDL.Vec(Budget)], ['query']),
+  'getCallerUserProfile' : IDL.Func(
+      [],
+      [IDL.Opt(IDL.Record({ 'name' : IDL.Text }))],
+      ['query'],
+    ),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getExpense' : IDL.Func([IDL.Nat], [IDL.Opt(Expense)], ['query']),
   'getExpenses' : IDL.Func([], [IDL.Vec(Expense)], ['query']),
+  'getIncomeAnalytics' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat))],
+      ['query'],
+    ),
   'getMembers' : IDL.Func([], [IDL.Vec(Member)], ['query']),
   'getMonthlySummary' : IDL.Func([IDL.Text], [MonthlySummary], ['query']),
   'getSettlements' : IDL.Func([], [IDL.Vec(Settlement)], ['query']),
-  'getUserProfile' : IDL.Func(
-      [IDL.Principal],
-      [IDL.Opt(UserProfile)],
+  'getSpendingAnalytics' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat))],
       ['query'],
     ),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(IDL.Record({ 'name' : IDL.Text }))],
+      ['query'],
+    ),
+  'getWallet' : IDL.Func([IDL.Text], [Wallet], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'removeMember' : IDL.Func([IDL.Text], [], []),
-  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'saveCallerUserProfile' : IDL.Func(
+      [IDL.Record({ 'name' : IDL.Text })],
+      [],
+      [],
+    ),
+  'uploadReceipt' : IDL.Func([IDL.Text, ExternalBlob], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
   const Category = IDL.Variant({
     'other' : IDL.Null,
     'entertainment' : IDL.Null,
@@ -94,27 +213,46 @@ export const idlFactory = ({ IDL }) => {
     'groceries' : IDL.Null,
     'schoolFees' : IDL.Null,
   });
+  const SplitType = IDL.Variant({
+    'custom' : IDL.Null,
+    'equal' : IDL.Null,
+    'percentage' : IDL.Null,
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const Member = IDL.Record({ 'balance' : IDL.Int, 'name' : IDL.Text });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text, 'email' : IDL.Text });
+  const Time = IDL.Int;
+  const Budget = IDL.Record({
+    'id' : IDL.Nat,
+    'month' : IDL.Text,
+    'owner' : IDL.Text,
+    'createdAt' : Time,
+    'year' : IDL.Nat,
+    'category' : Category,
+    'amount' : IDL.Nat,
+  });
   const Expense = IDL.Record({
     'id' : IDL.Nat,
-    'date' : IDL.Text,
+    'date' : Time,
+    'splitType' : SplitType,
     'description' : IDL.Text,
     'category' : Category,
     'amount' : IDL.Nat,
     'paidBy' : IDL.Text,
-    'splitAmong' : IDL.Vec(IDL.Text),
+    'splitDetails' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+  });
+  const Member = IDL.Record({
+    'id' : IDL.Text,
+    'name' : IDL.Text,
+    'phone' : IDL.Text,
   });
   const MonthlySummary = IDL.Record({
-    'totalSpending' : IDL.Nat,
     'categoryBreakdown' : IDL.Vec(IDL.Tuple(Category, IDL.Nat)),
+    'totalFundsAdded' : IDL.Nat,
+    'totalExpenses' : IDL.Nat,
   });
-  const Time = IDL.Int;
   const Settlement = IDL.Record({
     'to' : IDL.Text,
     'from' : IDL.Text,
@@ -122,38 +260,119 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : Time,
     'amount' : IDL.Nat,
   });
+  const Transaction = IDL.Record({
+    'id' : IDL.Nat,
+    'transactionType' : IDL.Variant({
+      'expense' : IDL.Opt(IDL.Text),
+      'fundsAdded' : IDL.Record({ 'user' : IDL.Text }),
+    }),
+    'description' : IDL.Opt(IDL.Text),
+    'timestamp' : Time,
+    'amount' : IDL.Int,
+  });
+  const Wallet = IDL.Record({
+    'balance' : IDL.Int,
+    'transactionHistory' : IDL.Vec(Transaction),
+  });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   
   return IDL.Service({
-    '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addExpense' : IDL.Func(
-        [IDL.Text, IDL.Nat, Category, IDL.Text, IDL.Vec(IDL.Text), IDL.Text],
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
         [],
         [],
       ),
-    'addMember' : IDL.Func([IDL.Text], [], []),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+    '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addBudget' : IDL.Func([Category, IDL.Nat, IDL.Text, IDL.Nat], [], []),
+    'addExpense' : IDL.Func(
+        [
+          IDL.Text,
+          IDL.Nat,
+          Category,
+          IDL.Text,
+          SplitType,
+          IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+        ],
+        [],
+        [],
+      ),
+    'addFunds' : IDL.Func([IDL.Text, IDL.Nat], [], []),
+    'addMember' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'addSettlement' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
         [],
         [],
       ),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'convertCurrency' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        ['query'],
+      ),
     'deleteExpense' : IDL.Func([IDL.Nat], [], []),
-    'getBalances' : IDL.Func([], [IDL.Vec(Member)], ['query']),
-    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+    'getBudgets' : IDL.Func([], [IDL.Vec(Budget)], ['query']),
+    'getBudgetsByCategory' : IDL.Func([Category], [IDL.Vec(Budget)], ['query']),
+    'getBudgetsByMonthYear' : IDL.Func(
+        [IDL.Text, IDL.Nat],
+        [IDL.Vec(Budget)],
+        ['query'],
+      ),
+    'getBudgetsByOwner' : IDL.Func([IDL.Text], [IDL.Vec(Budget)], ['query']),
+    'getCallerUserProfile' : IDL.Func(
+        [],
+        [IDL.Opt(IDL.Record({ 'name' : IDL.Text }))],
+        ['query'],
+      ),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getExpense' : IDL.Func([IDL.Nat], [IDL.Opt(Expense)], ['query']),
     'getExpenses' : IDL.Func([], [IDL.Vec(Expense)], ['query']),
+    'getIncomeAnalytics' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat))],
+        ['query'],
+      ),
     'getMembers' : IDL.Func([], [IDL.Vec(Member)], ['query']),
     'getMonthlySummary' : IDL.Func([IDL.Text], [MonthlySummary], ['query']),
     'getSettlements' : IDL.Func([], [IDL.Vec(Settlement)], ['query']),
-    'getUserProfile' : IDL.Func(
-        [IDL.Principal],
-        [IDL.Opt(UserProfile)],
+    'getSpendingAnalytics' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat))],
         ['query'],
       ),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(IDL.Record({ 'name' : IDL.Text }))],
+        ['query'],
+      ),
+    'getWallet' : IDL.Func([IDL.Text], [Wallet], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'removeMember' : IDL.Func([IDL.Text], [], []),
-    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'saveCallerUserProfile' : IDL.Func(
+        [IDL.Record({ 'name' : IDL.Text })],
+        [],
+        [],
+      ),
+    'uploadReceipt' : IDL.Func([IDL.Text, ExternalBlob], [], []),
   });
 };
 

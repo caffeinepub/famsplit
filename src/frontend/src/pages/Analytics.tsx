@@ -28,7 +28,7 @@ const CATEGORY_COLORS: Record<Category, string> = {
   groceries: "#16a34a",
   rent: "#2563eb",
   utilities: "#d97706",
-  medical: "#dc2626",
+  medical: "#7c3aed",
   travel: "#9333ea",
   education: "#0284c7",
   entertainment: "#db2777",

@@ -148,7 +148,7 @@ export function Wallet() {
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <ArrowUp className="w-3.5 h-3.5 text-red-300" />
+                <ArrowUp className="w-3.5 h-3.5 text-primary-foreground/70" />
                 <div>
                   <p className="text-[10px] text-primary-foreground/60">
                     Total Out
@@ -239,13 +239,13 @@ export function Wallet() {
                     <CardContent className="p-3 flex items-center gap-3">
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          isIn ? "bg-green-100" : "bg-red-100"
+                          isIn ? "bg-green-100" : "bg-primary/10"
                         }`}
                       >
                         {isIn ? (
                           <ArrowDown className="w-4 h-4 text-green-600" />
                         ) : (
-                          <ArrowUp className="w-4 h-4 text-red-500" />
+                          <ArrowUp className="w-4 h-4 text-primary" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -272,7 +272,7 @@ export function Wallet() {
                         )}
                       </div>
                       <span
-                        className={`font-bold text-sm ${isIn ? "text-green-600" : "text-destructive"}`}
+                        className={`font-bold text-sm ${isIn ? "text-green-600" : "text-primary"}`}
                       >
                         {isIn ? "+" : "-"}₹{fmt(tx.amount)}
                       </span>
